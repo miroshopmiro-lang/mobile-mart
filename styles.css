@@ -193,13 +193,16 @@ img { user-select: none; }
   opacity: 0;
 }
 
-.card:not(.is-revealed):not(.is-presented):hover {
+.card:not(.is-revealed):not(.is-presented):not(.is-scratching):hover {
   transform: translateY(-8px) scale(1.015);
   box-shadow: var(--shadow-card-hover);
 }
 
-.card:not(.is-revealed):not(.is-presented):active {
-  transform: translateY(-2px) scale(0.99);
+/* While scratching, the card must be perfectly still at scale 1 —
+   any transform or transition here makes strokes land away from the pointer */
+.card.is-scratching {
+  transform: none !important;
+  transition: none !important;
 }
 
 /* Beneath layer — revealed presenter teaser */

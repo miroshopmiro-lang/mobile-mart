@@ -234,28 +234,28 @@ function paintFoil(canvas, index) {
 
 function makeScratchable(canvas, onReveal) {
   const ctx = canvas.getContext('2d');
+  const card = canvas.closest('.card');
   let scratching = false;
   let last = null;
   let revealed = false;
   let travelled = 0; // total pointer travel while scratching, in CSS px
 
-  const brushRadius = () => canvas.getBoundingClientRect().width * 0.085;
-
+  // Pointer position relative to the canvas box, in CSS pixels
   function localPoint(e) {
     const r = canvas.getBoundingClientRect();
-    return {
-      x: ((e.clientX - r.left) / r.width) * canvas.width,
-      y: ((e.clientY - r.top) / r.height) * canvas.height,
-    };
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
   }
 
+  // Draw in CSS-pixel space with an explicit per-axis transform.
+  // Immune to DPR, leftover context transforms, and canvas stretch.
   function scratchStroke(from, to) {
-    const dpr = canvas.width / canvas.getBoundingClientRect().width;
-    const radius = brushRadius() * dpr;
+    const r = canvas.getBoundingClientRect();
+    const sx = canvas.width / r.width;
+    const sy = canvas.height / r.height;
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // neutralise the DPR scale left on the context by paintFoil
+    ctx.setTransform(sx, 0, 0, sy, 0, 0);
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = radius * 2;
+    ctx.lineWidth = r.width * 0.17; // brush diameter in CSS px
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
@@ -268,7 +268,8 @@ function makeScratchable(canvas, onReveal) {
   canvas.addEventListener('pointerdown', (e) => {
     if (revealed) return;
     scratching = true;
-    canvas.dataset.touched = '1'; // protects in-progress scratches from the logo-load repaint
+    canvas.dataset.touched = '1';
+    card.classList.add('is-scratching'); // pin the card still so strokes stay under the pointer
     canvas.setPointerCapture(e.pointerId);
     last = { local: localPoint(e), x: e.clientX, y: e.clientY };
     scratchStroke(last.local, last.local);
@@ -287,6 +288,7 @@ function makeScratchable(canvas, onReveal) {
   const stop = () => {
     if (!scratching) return;
     scratching = false;
+    card.classList.remove('is-scratching');
     if (!revealed && travelled >= MIN_SCRATCH_DISTANCE) {
       revealed = true;
       onReveal();

@@ -225,6 +225,9 @@ function paintFoil(canvas, index) {
   ctx.fillText(`0${index + 1}`, 41, 34);
   ctx.restore();
 
+  // Leave the context with an identity transform so scratch strokes
+  // (which work in physical canvas pixels) land exactly under the pointer
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 /* ────────────────────────── Scratch mechanic ────────────────────────── */
@@ -250,6 +253,7 @@ function makeScratchable(canvas, onReveal) {
     const dpr = canvas.width / canvas.getBoundingClientRect().width;
     const radius = brushRadius() * dpr;
     ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // neutralise the DPR scale left on the context by paintFoil
     ctx.globalCompositeOperation = 'destination-out';
     ctx.lineWidth = radius * 2;
     ctx.lineCap = 'round';

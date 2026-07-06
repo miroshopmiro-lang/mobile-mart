@@ -25,7 +25,7 @@ const PRESENTERS = [
   {
     name: 'Rahul R Kumar',
     company: 'Archon Solutions',
-    category: 'Training',
+    category: 'ERP Solution',
     email: 'rahul.r@aspl.be',
     phone: '8137977477',
     image: 'connection_crew_page-0002.jpg',
@@ -79,6 +79,7 @@ const state = {
   activeIndex: -1,
   closing: false,
   logoImage: null,
+  scratchLock: false,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -266,7 +267,9 @@ function makeScratchable(canvas, onReveal) {
   }
 
   canvas.addEventListener('pointerdown', (e) => {
-    if (revealed) return;
+    if (revealed || !e.isPrimary || state.scratchLock) return;
+    e.preventDefault(); // stop native drag/selection of anything beneath the foil
+    state.scratchLock = true; // only one card can be scratched at a time
     scratching = true;
     canvas.dataset.touched = '1';
     card.classList.add('is-scratching'); // pin the card still so strokes stay under the pointer
@@ -288,6 +291,7 @@ function makeScratchable(canvas, onReveal) {
   const stop = () => {
     if (!scratching) return;
     scratching = false;
+    state.scratchLock = false;
     card.classList.remove('is-scratching');
     if (!revealed && travelled >= MIN_SCRATCH_DISTANCE) {
       revealed = true;
@@ -472,8 +476,8 @@ function closeOverlay() {
       markPresented(index);
     },
   })
-    .to(els.overlayImage, { y: 30, opacity: 0, duration: 0.4, ease: 'power2.in' }, 0)
-    .to(els.overlay, { opacity: 0, duration: 0.45, ease: 'power2.in' }, 0.08);
+    .to(els.overlayImage, { y: 14, opacity: 0, duration: 0.18, ease: 'power2.in' }, 0)
+    .to(els.overlay, { opacity: 0, duration: 0.22, ease: 'power2.in' }, 0.04);
 }
 
 function markPresented(index) {
@@ -571,6 +575,10 @@ function boot() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && els.overlay.getAttribute('aria-hidden') === 'false') closeOverlay();
   });
+
+  // Native drag ghosts and long-press menus would break the scratch illusion
+  document.addEventListener('dragstart', (e) => e.preventDefault());
+  els.grid.addEventListener('contextmenu', (e) => e.preventDefault());
 }
 
 document.addEventListener('DOMContentLoaded', boot);

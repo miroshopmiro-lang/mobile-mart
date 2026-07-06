@@ -530,7 +530,16 @@ function playIntro() {
     .fromTo('.intro__glow', { opacity: 0 }, { opacity: 1, duration: 1.6, ease: 'power1.out' }, 0);
 }
 
+function requestFullscreen() {
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (fn && !document.fullscreenElement && !document.webkitFullscreenElement) {
+    fn.call(el).catch(() => {}); // never block the experience if fullscreen is denied
+  }
+}
+
 function enterStage() {
+  requestFullscreen();
   window.scrollTo(0, 0);
   gsap.timeline()
     .to(els.intro, { opacity: 0, duration: 0.55, ease: 'power2.inOut' })
@@ -574,6 +583,11 @@ function boot() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && els.overlay.getAttribute('aria-hidden') === 'false') closeOverlay();
+    // F toggles fullscreen at any point during the evening
+    if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else requestFullscreen();
+    }
   });
 
   // Native drag ghosts and long-press menus would break the scratch illusion

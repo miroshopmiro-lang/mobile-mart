@@ -92,7 +92,12 @@ const els = {
   progressCount: $('#progress-count'),
   overlay: $('#overlay'),
   overlayImage: $('#overlay-image'),
-  overlayKicker: $('.overlay__kicker'),
+  overlayName: $('#overlay-name'),
+  overlayCompany: $('#overlay-company'),
+  overlayCategory: $('#overlay-category'),
+  overlayEmail: $('#overlay-email'),
+  overlayPhone: $('#overlay-phone'),
+  overlayKicker: $('#overlay-kicker'),
   closeBtn: $('#close-btn'),
   finale: $('#finale'),
   replayBtn: $('#replay-btn'),
@@ -415,8 +420,25 @@ function openOverlay(index) {
 
   els.overlayImage.src = p.image;
   els.overlayImage.alt = `${p.name} — presentation page`;
+  els.overlayName.textContent = p.name;
+  els.overlayCompany.textContent = p.company;
+  els.overlayCategory.textContent = p.category;
+  els.overlayEmail.querySelector('.overlay__contact-text').textContent = p.email;
+  els.overlayEmail.href = `mailto:${p.email}`;
+  els.overlayPhone.querySelector('.overlay__contact-text').textContent = p.phone;
+  els.overlayPhone.href = `tel:${p.phone}`;
 
   els.overlay.setAttribute('aria-hidden', 'false');
+
+  const panelItems = [
+    els.overlayKicker,
+    els.overlayName,
+    els.overlayCompany,
+    els.overlayCategory,
+    $('.overlay__divider'),
+    els.overlayEmail,
+    els.overlayPhone,
+  ];
 
   gsap.timeline()
     .set(els.overlay, { visibility: 'visible' })
@@ -426,6 +448,12 @@ function openOverlay(index) {
       { y: 46, opacity: 0, scale: 0.96 },
       { y: 0, opacity: 1, scale: 1, duration: 0.9, ease: 'expo.out' },
       0.12
+    )
+    .fromTo(
+      panelItems,
+      { y: 26, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.7, ease: 'expo.out', stagger: 0.07 },
+      0.28
     )
     .fromTo(
       $('.overlay__chrome'),
